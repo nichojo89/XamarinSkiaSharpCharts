@@ -5,6 +5,5 @@
              xmlns:charts="clr-namespace:XamarinSkiaCharts.Charts"
              iOS:Page.UseSafeArea="True"
              xmlns:iOS="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core">
-    <charts:BarChart x:Name="BarChart"
-                     Points="{Binding .}" />
+    <charts:LineChart Points="{Binding .}" />
 </ContentPage>

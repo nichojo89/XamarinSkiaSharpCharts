@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SkiaSharp;
 using SkiaSharp.Views.Forms;
@@ -31,6 +32,8 @@ namespace XamarinSkiaCharts.Charts
             propertyChanged: async (bindable, oldValue, newValue) =>
             {
                 var chart = ((BarChart)bindable);
+
+                chart.Max = chart.Points.OrderBy(x => x).FirstOrDefault();
                 if (!chart.ChartsLoading)
                 {
                     //New data added, re-render chart without loading animation
@@ -80,7 +83,7 @@ namespace XamarinSkiaCharts.Charts
 
                 for (var i = 0; i < Points.Count; i++)
                 {
-                    var barHeight = info.Height - (info.Height * (Points[i] / _max) * _barScale);
+                    var barHeight = info.Height - (info.Height * (Points[i] / Max) * _barScale);
                     var bar = new SKRect(barXAxis, barHeight, barXAxis + BAR_WIDTH, info.Height);
 
                     canvas.DrawRect(bar, paint);
@@ -136,15 +139,16 @@ namespace XamarinSkiaCharts.Charts
             ChartsLoading = false;
         }
 
+        public float Max;
+        public bool ChartsLoading = true;
 
         private float _xOrigin;
-        private float _max = 10;
         private float _chartWidth;
         private float _xMoved = -1;
         private float _lastBarXAxis;
         private bool _moved = false;
         private float _barScale = 0.0f;
-        public bool ChartsLoading = true;
+        
         private float _firstBarXAxis = 20.0f;
        
     }
