@@ -39,6 +39,16 @@ namespace XamarinSkiaCharts.Charts
             var canvas = e.Surface.Canvas;
             canvas.Clear();
 
+            _chartWidth = info.Width;
+            const int POINT_SEGMENT_WIDTH = 100;
+
+            if (_moved)
+            {
+                _firstPointXAxis += _xMoved;
+            }
+
+            var pointXAxis = _firstPointXAxis;
+
             using (var paint = new SKPaint())
             {
                 // Create gradient for background
@@ -55,20 +65,23 @@ namespace XamarinSkiaCharts.Charts
                                     SKShaderTileMode.Clamp);
 
                 var linearPath = new SKPath();
-                const int segmentLength = 100;
                 for (var i = 0; i < Points.Count; i++)
                 {
                     var yAxis = info.Height - (info.Height * (Points[i] / Max));
                     if (i == 0)
                     {
-                        linearPath.MoveTo(new SKPoint(0, yAxis));
+                        linearPath.MoveTo(new SKPoint(pointXAxis, yAxis));
                     }
                     else 
                     {
-                        linearPath.LineTo(new SKPoint(segmentLength * i, yAxis));
+                        linearPath.LineTo(new SKPoint(pointXAxis, yAxis));
                     }
+                    pointXAxis += POINT_SEGMENT_WIDTH + 20;
+
+                    if (i == Points.Count - 1)
+                        _lastPointXAxis = pointXAxis + POINT_SEGMENT_WIDTH;
                 }
-                linearPath.LineTo(new SKPoint((Points.Count - 1) * segmentLength, info.Height));
+                linearPath.LineTo(new SKPoint((Points.Count - 1) * POINT_SEGMENT_WIDTH, info.Height));
                 linearPath.LineTo(new SKPoint(0, info.Height));
 
                 //
@@ -77,6 +90,37 @@ namespace XamarinSkiaCharts.Charts
             }
         }
 
+        protected override void OnTouch(SKTouchEventArgs e)
+        {
+            base.OnTouch(e);
+            switch (e.ActionType)
+            {
+                case SKTouchAction.Pressed:
+                    _moved = true;
+                    _xOrigin = e.Location.X;
+                    break;
+                default:
+                    //var scrolled = (_xOrigin - e.Location.X) * -1;
+                    //var scrolledToLeftChartEdge = _firstBarXAxis + scrolled >= 40;
+                    //var scrolledToRightChartEdge = _lastBarXAxis + scrolled <= _chartWidth;
+                    //if (scrolledToLeftChartEdge || scrolledToRightChartEdge)
+                    //    return;
+
+                    _xMoved = (_xOrigin - e.Location.X) * -1;
+                    _xOrigin = e.Location.X;
+                    InvalidateSurface();
+
+                    break;
+            }
+            e.Handled = true;
+        }
+
         public float Max;
+        private float _xOrigin;
+        private float _chartWidth;
+        private float _xMoved = -1;
+        private bool _moved = false;
+        private float _lastPointXAxis;
+        private float _firstPointXAxis = 20.0f;
     }
 }
