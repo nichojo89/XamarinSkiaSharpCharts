@@ -48,73 +48,87 @@ namespace XamarinSkiaCharts.Charts
             var pointXAxis = _firstPointXAxis;
             var linearPath = new SKPath();
 
-            using (var linePaint = new SKPaint()
+            // Create gradient for background
+            var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
+            var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0XAF);
+
+            using (var gradientPaint = new SKPaint()
             {
-                Color = Color.FromHex("#7F2CF6").ToSKColor(),
                 Style = SKPaintStyle.Fill,
                 StrokeCap = SKStrokeCap.Round,
-                TextSize = 40
+                Shader = SKShader.CreateLinearGradient(
+                                    new SKPoint(info.Rect.Left, info.Rect.MidY),
+                                    new SKPoint(info.Rect.Right, info.Rect.MidY),
+                                    new SKColor[] {transparentMauiPurpleColor, mauiPurpleColor },
+                                    new float[] { 0, 1 },
+                                    SKShaderTileMode.Decal)
             })
             {
-                //Generate path
-                for (var i = 0; i < Points.Count; i++)
+                using (var textPaint = new SKPaint
                 {
-                    var point = Points.ElementAt(i);
-                    var yAxis = info.Height - (info.Height * (point.Value / Max));
-                    if (i == 0)
+                    TextSize = 30,
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Fill,
+                    Color = Color.FromHex("#7F2CF6").ToSKColor()
+                })
+                {
+                    //Generate path
+                    for (var i = 0; i < Points.Count; i++)
                     {
-                        linearPath.MoveTo(new SKPoint(pointXAxis, yAxis));
+                        var point = Points.ElementAt(i);
+                        var yAxis = info.Height - (info.Height * (point.Value / Max));
+
+                        if (i == 0)
+                        {
+                            linearPath.MoveTo(new SKPoint(pointXAxis, yAxis));
+                        }
+                        else
+                        {
+                            linearPath.LineTo(new SKPoint(pointXAxis, yAxis));
+                        }
+
+                        canvas.DrawCircle(new SKPoint(pointXAxis, yAxis), 10, gradientPaint);
+
+                        var isLastDataPoint = i == Points.Count - 1;
+
+                        //Draw text
+                        var pointText = $"{point.Key}: {point.Value}";
+                        canvas.DrawText(pointText,
+                            new SKPoint(
+                            isLastDataPoint || i == Points.Count - 2
+                            ? pointXAxis - gradientPaint.MeasureText(pointText) - 20
+                            : pointXAxis + 20,
+                            yAxis - 10), textPaint);
+
+                        //Remember last point x axis
+                        if (isLastDataPoint)
+                            _lastPointXAxis = pointXAxis;
+
+                        //Move x axis to next point
+                        pointXAxis += POINT_SEGMENT_WIDTH + 20;
                     }
-                    else
-                    {
-                        linearPath.LineTo(new SKPoint(pointXAxis, yAxis));
-                    }
-
-                    canvas.DrawCircle(new SKPoint(pointXAxis, yAxis), 10, linePaint);
-
-                    var isLastDataPoint = i == Points.Count - 1;
-
-                    //Draw text
-                    var pointText = $"{point.Key}: {point.Value}";
-                    canvas.DrawText(pointText,
-                        new SKPoint(
-                        isLastDataPoint || i == Points.Count - 2
-                        ? pointXAxis - linePaint.MeasureText(pointText) - 20
-                        : pointXAxis + 20,
-                        yAxis - 10), linePaint);
-
-                    //Remember last point x axis
-                    if (isLastDataPoint)
-                        _lastPointXAxis = pointXAxis;
-
-                    //Move x axis to next point
-                    pointXAxis += POINT_SEGMENT_WIDTH + 20;
                 }
 
-                //Draw Line
-                linePaint.Style = SKPaintStyle.Stroke;
-                linePaint.StrokeWidth = 7;
-                canvas.DrawPath(linearPath, linePaint);
-            }
+                    //Draw Line
+                    gradientPaint.Style = SKPaintStyle.Stroke;
+                gradientPaint.StrokeWidth = 7;
+                canvas.DrawPath(linearPath, gradientPaint);
+            
 
-            linearPath.LineTo(new SKPoint(_lastPointXAxis, info.Height));
-            linearPath.LineTo(new SKPoint(0, info.Height));
+                linearPath.LineTo(new SKPoint(_lastPointXAxis, info.Height));
+                linearPath.LineTo(new SKPoint(0, info.Height));
 
             
-            linearPath.Close();
-            using (var gradientPaint = new SKPaint())
-            {
-                // Create gradient for background
-                var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
-                var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF);
+                linearPath.Close();
+                
 
                 gradientPaint.Style = SKPaintStyle.Fill;
                 gradientPaint.Shader = SKShader.CreateLinearGradient(
-                                    new SKPoint(0, 0),
-                                    new SKPoint(info.Width, info.Height),
+                                    new SKPoint(info.Rect.MidX, info.Rect.Top),
+                                    new SKPoint(info.Rect.MidX, info.Rect.Bottom),
                                     new SKColor[] { mauiPurpleColor, transparentMauiPurpleColor },
-                                    null,
-                                    SKShaderTileMode.Clamp);
+                                    new float[] { 0, 1 },
+                                    SKShaderTileMode.Decal);
 
                 canvas.DrawPath(linearPath, gradientPaint);
             }

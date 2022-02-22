@@ -7,37 +7,21 @@ using Xamarin.Forms;
 
 namespace XamarinSkiaCharts.Charts
 {
-    public class BarChart : SKCanvasView
+    public class BarChartDrawable : SKCanvasView
     {
-        public static readonly BindableProperty LoadChartProperty = BindableProperty.Create(nameof(LoadChart),
-            typeof(bool),
-            typeof(BarChart),
-            false,
-            propertyChanged: async (bindable, oldValue, newValue) =>
-            {
-                if ((bool)newValue)
-                    await ((BarChart)bindable).LoadChartAnimation();
-            });
-
-        public bool LoadChart
-        {
-            get => (bool)GetValue(LoadChartProperty);
-            set => SetValue(LoadChartProperty, value);
-        }
-
         public static readonly BindableProperty PointsProperty = BindableProperty.Create(nameof(Points),
             typeof(Dictionary<string, float>),
-            typeof(BarChart),
+            typeof(BarChartDrawable),
             new Dictionary<string, float>(),
             propertyChanged: async (bindable, oldValue, newValue) =>
             {
-                var chart = ((BarChart)bindable);
+                var chart = ((BarChartDrawable)bindable);
 
                 chart.Max = chart.Points?.Select(x => x.Value).Max() * 1.1f ?? 0.0f;
                 if (!chart.ChartsLoading)
                 {
                     //New data added, re-render chart without loading animation
-                    ((BarChart)bindable).InvalidateSurface();
+                    ((BarChartDrawable)bindable).InvalidateSurface();
                 }
             });
 
@@ -47,7 +31,7 @@ namespace XamarinSkiaCharts.Charts
             set => SetValue(PointsProperty, value);
         }
 
-        public BarChart()
+        public BarChartDrawable()
         {
             VerticalOptions = LayoutOptions.FillAndExpand;
             EnableTouchEvents = true;
@@ -83,25 +67,34 @@ namespace XamarinSkiaCharts.Charts
                                     null,
                                     SKShaderTileMode.Clamp);
 
-                for (var i = 0; i < Points.Count; i++)
+                using (var textPaint = new SKPaint
                 {
-                    var point = Points.ElementAt(i);
-                    var barHeight = info.Height - (info.Height * (point.Value / Max) * _barScale);
-                    var bar = new SKRect(barXAxis, barHeight, barXAxis + BAR_WIDTH, info.Height);
+                    TextSize = 30,
+                    IsAntialias = true,
+                    Style = SKPaintStyle.Fill,
+                    Color = Color.FromHex("#7F2CF6").ToSKColor()
+                })
+                {
+                    for (var i = 0; i < Points.Count; i++)
+                    {
+                        var point = Points.ElementAt(i);
+                        var barHeight = info.Height - (info.Height * (point.Value / Max) * _barScale);
+                        var bar = new SKRect(barXAxis, barHeight, barXAxis + BAR_WIDTH, info.Height);
 
-                    //Draw bars
-                    canvas.DrawRect(bar, paint);
+                        //Draw bars
+                        canvas.DrawRect(bar, paint);
 
-                    //Draw Text
-                    paint.Style = SKPaintStyle.Fill;
-                    paint.TextAlign = SKTextAlign.Center;
-                    canvas.DrawText(point.Key, new SKPoint(barXAxis + (BAR_WIDTH / 2),barHeight - 20), paint);
-                    barXAxis += BAR_WIDTH + 20;
+                        //Draw Text
+                        paint.Style = SKPaintStyle.Fill;
+                        paint.TextAlign = SKTextAlign.Center;
 
-                    if (i == Points.Count - 1)
-                        _lastBarXAxis = barXAxis + BAR_WIDTH;
+                        canvas.DrawText(point.Key, new SKPoint(barXAxis, barHeight - 20), textPaint);
+                        barXAxis += BAR_WIDTH + 20;
+
+                        if (i == Points.Count - 1)
+                            _lastBarXAxis = barXAxis + BAR_WIDTH;
+                    }
                 }
-
             }
         }
 

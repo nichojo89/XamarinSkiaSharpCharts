@@ -20,9 +20,11 @@
     <None Remove="SkiaSharp" />
     <None Remove="SkiaSharp.Views.Forms" />
     <None Remove="Charts\" />
+    <None Remove="Charts\BarChart\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Charts\" />
+    <Folder Include="Charts\BarChart\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="MainPage.xaml">

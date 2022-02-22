@@ -25,10 +25,14 @@ namespace XamarinSkiaCharts
             };
         }
 
-        protected override void OnAppearing()
+        protected async override void OnAppearing()
         {
             base.OnAppearing();
-            BarChart.LoadChart = true;
+
+            //This is only neccesary because our chart is the first view that loads when app starts
+            //If you want to use this and the bar chart is not on the very first view then you can
+            //Remove all the "LoadChart" properties to get this to work without it
+            await BarChart.LoadChart();
         }
     }
 }
