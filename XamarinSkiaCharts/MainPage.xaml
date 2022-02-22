@@ -6,6 +6,6 @@
              iOS:Page.UseSafeArea="True"
              xmlns:iOS="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core">
     <!--<charts:LineChart Points="{Binding .}" />-->
-    <!--<charts:BarChart Points="{Binding .}" x:Name="BarChart"/>-->
-    <charts:PieChart Points="{Binding .}" />
+    <charts:BarChart Points="{Binding .}" x:Name="BarChart"/>
+    <!--<charts:PieChart Points="{Binding .}" />-->
 </ContentPage>

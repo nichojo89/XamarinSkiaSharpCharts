@@ -33,7 +33,7 @@ namespace XamarinSkiaCharts.Charts
             {
                 var chart = ((BarChart)bindable);
 
-                chart.Max = chart.Points?.Select(x => x.Value).Max() + 1 ?? 0.0f;
+                chart.Max = chart.Points?.Select(x => x.Value).Max() * 1.1f ?? 0.0f;
                 if (!chart.ChartsLoading)
                 {
                     //New data added, re-render chart without loading animation

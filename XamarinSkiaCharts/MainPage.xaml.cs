@@ -28,7 +28,7 @@ namespace XamarinSkiaCharts
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            //BarChart.LoadChart = true;
+            BarChart.LoadChart = true;
         }
     }
 }
