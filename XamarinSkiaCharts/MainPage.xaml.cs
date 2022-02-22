@@ -8,27 +8,27 @@ namespace XamarinSkiaCharts
         public MainPage()
         {
             InitializeComponent();
-            BindingContext = new Dictionary<string,int>()
+            BindingContext = new Dictionary<string,float>()
             {
-                {"Apples",5},
-                {"Bananas",7 },
-                {"Strawberries",4 },
-                {"Blueberries",5 },
-                {"Oranges",8 },
-                {"Grapes",7 },
-                {"Watermelons",6 },
-                {"Pears",5 },
-                {"Cantalopes",8 },
-                {"Citrus",5 },
-                {"Starfruit",4 },
-                {"Papaya",7 },
+                {"Apples",5.0f},
+                {"Bananas",7.0f },
+                {"Strawberries",4.0f },
+                {"Blueberries",5.0f },
+                {"Oranges",8.0f },
+                {"Grapes",7.0f },
+                {"Watermelons",6.0f },
+                {"Pears",5.0f },
+                {"Cantalopes",8.0f },
+                {"Citrus",5.0f },
+                {"Starfruit",4.0f },
+                {"Papaya",7.0f },
             };
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            //BarChart.LoadChart = true;
+            BarChart.LoadChart = true;
         }
     }
 }

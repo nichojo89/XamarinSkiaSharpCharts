@@ -26,14 +26,14 @@ namespace XamarinSkiaCharts.Charts
         }
 
         public static readonly BindableProperty PointsProperty = BindableProperty.Create(nameof(Points),
-            typeof(List<int>),
+            typeof(Dictionary<string, float>),
             typeof(BarChart),
-            new List<int>(),
+            new Dictionary<string, float>(),
             propertyChanged: async (bindable, oldValue, newValue) =>
             {
                 var chart = ((BarChart)bindable);
 
-                chart.Max = chart.Points.OrderBy(x => x).FirstOrDefault();
+                chart.Max = chart.Points?.Select(x => x.Value).Max() + 1 ?? 0.0f;
                 if (!chart.ChartsLoading)
                 {
                     //New data added, re-render chart without loading animation
@@ -41,9 +41,9 @@ namespace XamarinSkiaCharts.Charts
                 }
             });
 
-        public List<int> Points
+        public Dictionary<string, float> Points
         {
-            get => (List<int>)GetValue(PointsProperty);
+            get => (Dictionary<string, float>)GetValue(PointsProperty);
             set => SetValue(PointsProperty, value);
         }
 
@@ -64,9 +64,8 @@ namespace XamarinSkiaCharts.Charts
             const int BAR_WIDTH = 100;
 
             if (_moved)
-            {
                 _firstBarXAxis += _xMoved;
-            }
+
             var barXAxis = _firstBarXAxis;
             
             using (var paint = new SKPaint())
@@ -83,9 +82,11 @@ namespace XamarinSkiaCharts.Charts
 
                 for (var i = 0; i < Points.Count; i++)
                 {
-                    var barHeight = info.Height - (info.Height * (Points[i] / Max) * _barScale);
+                    var point = Points.ElementAt(i).Value;
+                    var barHeight = info.Height - (info.Height * (point / Max) * _barScale);
                     var bar = new SKRect(barXAxis, barHeight, barXAxis + BAR_WIDTH, info.Height);
 
+                    //Draw bars
                     canvas.DrawRect(bar, paint);
                     barXAxis += BAR_WIDTH + 20;
 
@@ -96,6 +97,10 @@ namespace XamarinSkiaCharts.Charts
             }
         }
 
+        /// <summary>
+        /// Touching canvas allows horizontal scrolling
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnTouch(SKTouchEventArgs e)
         {
             base.OnTouch(e);
@@ -125,8 +130,7 @@ namespace XamarinSkiaCharts.Charts
         }
 
         /// <summary>
-        /// Animates bars from 1/30 of their height to 30/30
-        /// loop starts at 29 because the first canvas load han
+        /// Animates bars from 1/30 scale over 1 second
         /// </summary>
         public async Task LoadChartAnimation()
         {
@@ -148,8 +152,6 @@ namespace XamarinSkiaCharts.Charts
         private float _lastBarXAxis;
         private bool _moved = false;
         private float _barScale = 0.0f;
-        
         private float _firstBarXAxis = 20.0f;
-       
     }
 }

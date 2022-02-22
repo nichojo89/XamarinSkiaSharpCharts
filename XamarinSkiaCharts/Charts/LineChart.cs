@@ -9,9 +9,9 @@ namespace XamarinSkiaCharts.Charts
     public class LineChart : SKCanvasView
     {
         public static readonly BindableProperty PointsProperty = BindableProperty.Create(nameof(Points),
-            typeof(Dictionary<string,int>),
+            typeof(Dictionary<string,float>),
             typeof(LineChart),
-            new Dictionary<string, int>(),
+            new Dictionary<string, float>(),
             propertyChanged: async (bindable, oldValue, newValue) =>
             {
                 var chart = ((LineChart)bindable);
@@ -19,9 +19,9 @@ namespace XamarinSkiaCharts.Charts
                 chart.Max = chart.Points?.Select(x => x.Value).Max() + 1 ?? 0;
             });
 
-        public Dictionary<string, int> Points
+        public Dictionary<string, float> Points
         {
-            get => (Dictionary<string, int>)GetValue(PointsProperty);
+            get => (Dictionary<string, float>)GetValue(PointsProperty);
             set => SetValue(PointsProperty, value);
         }
 
@@ -43,20 +43,11 @@ namespace XamarinSkiaCharts.Charts
             const int POINT_SEGMENT_WIDTH = 100;
 
             if (_moved)
-            {
                 _firstPointXAxis += _xMoved;
-            }
 
             var pointXAxis = _firstPointXAxis;
-
-            // Create gradient for background
-            var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
-            var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF);
-
-            //paint.Color = SKColors.Red;
-            
-
             var linearPath = new SKPath();
+
             using (var linePaint = new SKPaint()
             {
                 Color = Color.FromHex("#7F2CF6").ToSKColor(),
@@ -114,6 +105,10 @@ namespace XamarinSkiaCharts.Charts
             linearPath.Close();
             using (var gradientPaint = new SKPaint())
             {
+                // Create gradient for background
+                var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
+                var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF);
+
                 gradientPaint.Style = SKPaintStyle.Fill;
                 gradientPaint.Shader = SKShader.CreateLinearGradient(
                                     new SKPoint(0, 0),
