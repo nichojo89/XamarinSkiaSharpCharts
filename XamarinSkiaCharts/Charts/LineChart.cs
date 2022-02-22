@@ -9,19 +9,19 @@ namespace XamarinSkiaCharts.Charts
     public class LineChart : SKCanvasView
     {
         public static readonly BindableProperty PointsProperty = BindableProperty.Create(nameof(Points),
-            typeof(List<int>),
+            typeof(Dictionary<string,int>),
             typeof(LineChart),
-            new List<int>(),
+            new Dictionary<string, int>(),
             propertyChanged: async (bindable, oldValue, newValue) =>
             {
                 var chart = ((LineChart)bindable);
 
-                chart.Max = chart.Points?.Max() + 1 ?? 0;
+                chart.Max = chart.Points?.Select(x => x.Value).Max() + 1 ?? 0;
             });
 
-        public List<int> Points
+        public Dictionary<string, int> Points
         {
-            get => (List<int>)GetValue(PointsProperty);
+            get => (Dictionary<string, int>)GetValue(PointsProperty);
             set => SetValue(PointsProperty, value);
         }
 
@@ -49,44 +49,80 @@ namespace XamarinSkiaCharts.Charts
 
             var pointXAxis = _firstPointXAxis;
 
-            using (var paint = new SKPaint())
-            {
-                // Create gradient for background
-                var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
-                var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF);
+            // Create gradient for background
+            var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
+            var mauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF);
 
-                //paint.Color = SKColors.Red;
-                paint.Style = SKPaintStyle.Fill;
-                paint.Shader = SKShader.CreateLinearGradient(
+            //paint.Color = SKColors.Red;
+            
+
+            var linearPath = new SKPath();
+            using (var linePaint = new SKPaint()
+            {
+                Color = Color.FromHex("#7F2CF6").ToSKColor(),
+                Style = SKPaintStyle.Fill,
+                StrokeCap = SKStrokeCap.Round,
+                TextSize = 40,
+                IsEmbeddedBitmapText = false
+            })
+            {
+                //Generate path
+                for (var i = 0; i < Points.Count; i++)
+                {
+                    var point = Points.ElementAt(i);
+                    var yAxis = info.Height - (info.Height * (point.Value / Max));
+                    if (i == 0)
+                    {
+                        linearPath.MoveTo(new SKPoint(pointXAxis, yAxis));
+                    }
+                    else
+                    {
+                        linearPath.LineTo(new SKPoint(pointXAxis, yAxis));
+                    }
+
+                    canvas.DrawCircle(new SKPoint(pointXAxis, yAxis), 10, linePaint);
+
+                    var isLastDataPoint = i == Points.Count - 1;
+
+                    //Draw text
+                    var pointText = $"{point.Key}: {point.Value}";
+                    canvas.DrawText(pointText,
+                        new SKPoint(
+                        isLastDataPoint || i == Points.Count - 2
+                        ? pointXAxis - linePaint.MeasureText(pointText) - 20
+                        : pointXAxis + 20,
+                        yAxis - 10), linePaint);
+
+                    //Remember last point x axis
+                    if (isLastDataPoint)
+                        _lastPointXAxis = pointXAxis;
+
+                    //Move x axis to next point
+                    pointXAxis += POINT_SEGMENT_WIDTH + 20;
+                }
+
+                //Draw Line
+                linePaint.Style = SKPaintStyle.Stroke;
+                linePaint.StrokeWidth = 7;
+                canvas.DrawPath(linearPath, linePaint);
+            }
+
+            linearPath.LineTo(new SKPoint(_lastPointXAxis, info.Height));
+            linearPath.LineTo(new SKPoint(0, info.Height));
+
+            
+            linearPath.Close();
+            using (var gradientPaint = new SKPaint())
+            {
+                gradientPaint.Style = SKPaintStyle.Fill;
+                gradientPaint.Shader = SKShader.CreateLinearGradient(
                                     new SKPoint(0, 0),
                                     new SKPoint(info.Width, info.Height),
                                     new SKColor[] { mauiPurpleColor, transparentMauiPurpleColor },
                                     null,
                                     SKShaderTileMode.Clamp);
 
-                var linearPath = new SKPath();
-                for (var i = 0; i < Points.Count; i++)
-                {
-                    var yAxis = info.Height - (info.Height * (Points[i] / Max));
-                    if (i == 0)
-                    {
-                        linearPath.MoveTo(new SKPoint(pointXAxis, yAxis));
-                    }
-                    else 
-                    {
-                        linearPath.LineTo(new SKPoint(pointXAxis, yAxis));
-                    }
-                    pointXAxis += POINT_SEGMENT_WIDTH + 20;
-
-                    if (i == Points.Count - 1)
-                        _lastPointXAxis = pointXAxis + POINT_SEGMENT_WIDTH;
-                }
-                linearPath.LineTo(new SKPoint((Points.Count - 1) * POINT_SEGMENT_WIDTH, info.Height));
-                linearPath.LineTo(new SKPoint(0, info.Height));
-
-                //
-                linearPath.Close();
-                canvas.DrawPath(linearPath, paint);
+                canvas.DrawPath(linearPath, gradientPaint);
             }
         }
 
@@ -100,11 +136,11 @@ namespace XamarinSkiaCharts.Charts
                     _xOrigin = e.Location.X;
                     break;
                 default:
-                    //var scrolled = (_xOrigin - e.Location.X) * -1;
-                    //var scrolledToLeftChartEdge = _firstBarXAxis + scrolled >= 40;
-                    //var scrolledToRightChartEdge = _lastBarXAxis + scrolled <= _chartWidth;
-                    //if (scrolledToLeftChartEdge || scrolledToRightChartEdge)
-                    //    return;
+                    var scrolled = (_xOrigin - e.Location.X) * -1;
+                    var scrolledToLeftChartEdge = _firstPointXAxis + scrolled >= 0;
+                    var scrolledToRightChartEdge = _lastPointXAxis + scrolled <= _chartWidth;
+                    if (scrolledToLeftChartEdge || scrolledToRightChartEdge)
+                        return;
 
                     _xMoved = (_xOrigin - e.Location.X) * -1;
                     _xOrigin = e.Location.X;
@@ -121,6 +157,6 @@ namespace XamarinSkiaCharts.Charts
         private float _xMoved = -1;
         private bool _moved = false;
         private float _lastPointXAxis;
-        private float _firstPointXAxis = 20.0f;
+        private float _firstPointXAxis = 0.0f;
     }
 }

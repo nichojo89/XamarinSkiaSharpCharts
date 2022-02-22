@@ -8,9 +8,20 @@ namespace XamarinSkiaCharts
         public MainPage()
         {
             InitializeComponent();
-            BindingContext = new List<int>()
+            BindingContext = new Dictionary<string,int>()
             {
-                3,7,3,6,4,9,3,7,5,1,6,4,7
+                {"Apples",5},
+                {"Bananas",7 },
+                {"Strawberries",4 },
+                {"Blueberries",5 },
+                {"Oranges",8 },
+                {"Grapes",7 },
+                {"Watermelons",6 },
+                {"Pears",5 },
+                {"Cantalopes",8 },
+                {"Citrus",5 },
+                {"Starfruit",4 },
+                {"Papaya",7 },
             };
         }
 
