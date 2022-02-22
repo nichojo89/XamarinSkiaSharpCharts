@@ -68,7 +68,10 @@ namespace XamarinSkiaCharts.Charts
 
             var barXAxis = _firstBarXAxis;
             
-            using (var paint = new SKPaint())
+            using (var paint = new SKPaint()
+            {
+                TextSize = 30
+            })
             {
                 // Create gradient for background
                 var transparentMauiPurpleColor = new SKColor(0XB2, 0X7F, 0XFF, 0X0);
@@ -82,12 +85,17 @@ namespace XamarinSkiaCharts.Charts
 
                 for (var i = 0; i < Points.Count; i++)
                 {
-                    var point = Points.ElementAt(i).Value;
-                    var barHeight = info.Height - (info.Height * (point / Max) * _barScale);
+                    var point = Points.ElementAt(i);
+                    var barHeight = info.Height - (info.Height * (point.Value / Max) * _barScale);
                     var bar = new SKRect(barXAxis, barHeight, barXAxis + BAR_WIDTH, info.Height);
 
                     //Draw bars
                     canvas.DrawRect(bar, paint);
+
+                    //Draw Text
+                    paint.Style = SKPaintStyle.Fill;
+                    paint.TextAlign = SKTextAlign.Center;
+                    canvas.DrawText(point.Key, new SKPoint(barXAxis + (BAR_WIDTH / 2),barHeight - 20), paint);
                     barXAxis += BAR_WIDTH + 20;
 
                     if (i == Points.Count - 1)

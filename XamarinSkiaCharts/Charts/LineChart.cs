@@ -53,8 +53,7 @@ namespace XamarinSkiaCharts.Charts
                 Color = Color.FromHex("#7F2CF6").ToSKColor(),
                 Style = SKPaintStyle.Fill,
                 StrokeCap = SKStrokeCap.Round,
-                TextSize = 40,
-                IsEmbeddedBitmapText = false
+                TextSize = 40
             })
             {
                 //Generate path
